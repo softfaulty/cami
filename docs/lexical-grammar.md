@@ -7,23 +7,23 @@ closed by the language contract is marked with a blocker from
 
 ## notation
 
-| label | meaning |
-| --- | --- |
-| `specified` | the language rules state the spelling or character rule directly |
-| `observed` | normative examples use the spelling, but the language rules do not close the whole token family |
-| `blocked` | a conforming lexer cannot choose the missing rule |
+| label       | meaning                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| `specified` | the language rules state the spelling or character rule directly                                |
+| `observed`  | normative examples use the spelling, but the language rules do not close the whole token family |
+| `blocked`   | a conforming lexer cannot choose the missing rule                                               |
 
 an observed spelling may be tokenized for fixtures. it does not prove that the
 same word is reserved everywhere or that no other spelling exists.
 
 ## source text
 
-| item | status | extracted rule | audit |
-| --- | --- | --- | --- |
-| encoding | specified | source files are UTF-8; invalid UTF-8 is a source error | `S09-LEXER` |
-| source locations | specified | tokens retain byte range, line and Unicode-scalar column | `S09-LEXER`, `S13-TOOLS` |
-| line endings | blocked | normalization and accepted line-ending set are not stated | `BLK-LEX-003` |
-| Unicode identifiers | blocked | allowed code points and normalization are not stated | `BLK-LEX-001` |
+| item                | status    | extracted rule                                            | audit                    |
+| ------------------- | --------- | --------------------------------------------------------- | ------------------------ |
+| encoding            | specified | source files are UTF-8; invalid UTF-8 is a source error   | `S09-LEXER`              |
+| source locations    | specified | tokens retain byte range, line and Unicode-scalar column  | `S09-LEXER`, `S13-TOOLS` |
+| line endings        | blocked   | normalization and accepted line-ending set are not stated | `BLK-LEX-003`            |
+| Unicode identifiers | blocked   | allowed code points and normalization are not stated      | `BLK-LEX-001`            |
 
 ## identifiers and names
 

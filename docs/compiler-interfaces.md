@@ -9,11 +9,11 @@ every record acquires an abstract factory.
 
 every loaded source file exposes:
 
-| field | contract |
-| --- | --- |
-| normalized path | package-relative when the file belongs to a package |
-| bytes | original validated UTF-8 source bytes |
-| line index | maps a byte offset to one-based source line |
+| field               | contract                                              |
+| ------------------- | ----------------------------------------------------- |
+| normalized path     | package-relative when the file belongs to a package   |
+| bytes               | original validated UTF-8 source bytes                 |
+| line index          | maps a byte offset to one-based source line           |
 | scalar column index | maps a byte offset to one-based Unicode-scalar column |
 
 a half-open span contains:

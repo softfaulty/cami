@@ -207,14 +207,14 @@ audit: `S09-LINK`, `S11-TARGETS`, `S11-LAYOUT`, `S11-CACHE`.
 
 the earliest informed stage emits the user diagnostic:
 
-| stage | examples |
-| --- | --- |
-| lexer | invalid UTF-8, malformed token text, unterminated literal |
-| parser | missing delimiter, malformed declaration, impossible token order |
-| resolution | missing/inaccessible name, import cycle, invalid label |
-| type checking | bad conversion, failed bound, non-exhaustive match, bad C signature |
-| HIR | use after move, maybe-moved use, direct borrow conflict, invalid permitted comptime |
-| MIR verifier and later | internal compiler error |
+| stage                  | examples                                                                            |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| lexer                  | invalid UTF-8, malformed token text, unterminated literal                           |
+| parser                 | missing delimiter, malformed declaration, impossible token order                    |
+| resolution             | missing/inaccessible name, import cycle, invalid label                              |
+| type checking          | bad conversion, failed bound, non-exhaustive match, bad C signature                 |
+| HIR                    | use after move, maybe-moved use, direct borrow conflict, invalid permitted comptime |
+| MIR verifier and later | internal compiler error                                                             |
 
 all stages emit the shared structured diagnostic model. none print private
 little error strings and hope tooling develops telepathy.
