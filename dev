@@ -7,13 +7,53 @@ set -eu
 project_root=$(CDPATH= cd "$(dirname "$0")" && pwd)
 cd "$project_root"
 
-if [ "$#" -ne 1 ] || [ "$1" != "build" ]; then
-    printf 'usage: %s build\n' "$0" >&2
+usage() {
+    printf 'usage: %s {build|format}\n' "$0" >&2
     exit 1
+}
+
+configure() {
+    cmake --preset dev
+}
+
+prebuild() {
+    printf 'prebuild\n'
+    configure
+}
+
+build() {
+    printf 'build\n'
+    cmake --build --preset dev
+}
+
+postbuild() {
+    printf 'postbuild\n'
+    ctest --preset dev --output-on-failure
+    cmake --build --preset dev --target format-check
+    cmake --build --preset dev --target clang-tidy
+}
+
+format() {
+    printf 'format\n'
+    cmake --build --preset dev --target format
+}
+
+if [ "$#" -ne 1 ]; then
+    usage
 fi
 
-cmake --preset dev
-cmake --build --preset dev
-ctest --preset dev --output-on-failure
-cmake --build --preset dev --target format-check
-cmake --build --preset dev --target clang-tidy
+case "$1" in
+    build)
+        # build means the whole gate. partial success does not need a friendlier spelling.
+        format
+        prebuild
+        build
+        postbuild
+        ;;
+    format)
+        format
+        ;;
+    *)
+        usage
+        ;;
+esac

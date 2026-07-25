@@ -58,11 +58,23 @@ find_program(
 )
 
 add_custom_target(
+    format
+    COMMAND
+        "${CMAKE_COMMAND}"
+        "-DSOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DCLANG_FORMAT=${CAMI_CLANG_FORMAT}"
+        "-DFORMAT_MODE=write"
+        -P "${PROJECT_SOURCE_DIR}/cmake/CheckFormat.cmake"
+    VERBATIM
+)
+
+add_custom_target(
     format-check
     COMMAND
         "${CMAKE_COMMAND}"
         "-DSOURCE_DIR=${PROJECT_SOURCE_DIR}"
         "-DCLANG_FORMAT=${CAMI_CLANG_FORMAT}"
+        "-DFORMAT_MODE=check"
         -P "${PROJECT_SOURCE_DIR}/cmake/CheckFormat.cmake"
     VERBATIM
 )
@@ -84,7 +96,11 @@ configure_file(
     @ONLY
 )
 
-add_library(cami_compiler STATIC compiler/lib/cli.cpp)
+add_library(
+    cami_compiler STATIC
+    compiler/lib/cli.cpp
+    compiler/lib/source.cpp
+)
 target_include_directories(
     cami_compiler
     PUBLIC "${PROJECT_SOURCE_DIR}/compiler/include"
@@ -125,8 +141,13 @@ if(BUILD_TESTING)
     target_link_libraries(cami_cli_tests PRIVATE cami_compiler)
     cami_enable_warnings(cami_cli_tests)
 
+    add_executable(cami_source_tests tests/source_test.cpp)
+    target_link_libraries(cami_source_tests PRIVATE cami_compiler)
+    cami_enable_warnings(cami_source_tests)
+
     add_test(NAME cli.unit COMMAND cami_cli_tests)
     add_test(NAME cli.version COMMAND cami version)
+    add_test(NAME source.unit COMMAND cami_source_tests)
     set_tests_properties(
         cli.version
         PROPERTIES
