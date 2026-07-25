@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# made cus lazy
+
+set -eu
+
+project_root=$(CDPATH= cd "$(dirname "$0")" && pwd)
+cd "$project_root"
+
+if [ "$#" -ne 1 ] || [ "$1" != "build" ]; then
+    printf 'usage: %s build\n' "$0" >&2
+    exit 1
+fi
+
+cmake --preset dev
+cmake --build --preset dev
+ctest --preset dev --output-on-failure
+cmake --build --preset dev --target format-check
+cmake --build --preset dev --target clang-tidy

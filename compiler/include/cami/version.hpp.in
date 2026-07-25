@@ -1,0 +1,6 @@
+#pragma once
+
+#define CAMI_COMPILER_VER "@PROJECT_VERSION@"
+#define CAMI_LANG_VER "0.1"
+#define CAMI_MANIFEST_VER "1"
+#define CAMI_LLVM_VER "@LLVM_PACKAGE_VERSION@"

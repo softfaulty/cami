@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.25)
 
+if(CMAKE_HOST_APPLE AND NOT CMAKE_OSX_SYSROOT)
+    execute_process(
+        COMMAND xcrun --show-sdk-path
+        OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND_ERROR_IS_FATAL ANY
+    )
+    set(CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}" CACHE PATH "macOS SDK" FORCE)
+endif()
+
 project(cami VERSION 0.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -31,6 +41,8 @@ if(NOT LLVM_FOUND)
 endif()
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} in ${LLVM_DIR}")
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_program(
     CAMI_CLANG_FORMAT
@@ -66,6 +78,33 @@ add_custom_target(
     VERBATIM
 )
 
+configure_file(
+    "${PROJECT_SOURCE_DIR}/compiler/include/cami/version.hpp.in"
+    "${PROJECT_BINARY_DIR}/generated/cami/version.hpp"
+    @ONLY
+)
+
+add_library(cami_compiler STATIC compiler/lib/cli.cpp)
+target_include_directories(
+    cami_compiler
+    PUBLIC "${PROJECT_SOURCE_DIR}/compiler/include"
+    PRIVATE "${PROJECT_BINARY_DIR}/generated"
+)
+
+add_executable(cami compiler/main.cpp)
+target_link_libraries(cami PRIVATE cami_compiler)
+
+function(cami_enable_warnings target)
+    if(MSVC)
+        target_compile_options("${target}" PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options("${target}" PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endfunction()
+
+cami_enable_warnings(cami_compiler)
+cami_enable_warnings(cami)
+
 include(CTest)
 
 if(BUILD_TESTING)
@@ -80,5 +119,18 @@ if(BUILD_TESTING)
             "-DCLANG_FORMAT=${CAMI_CLANG_FORMAT}"
             "-DCLANG_TIDY=${CAMI_CLANG_TIDY}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyBootstrap.cmake"
+    )
+
+    add_executable(cami_cli_tests tests/cli_test.cpp)
+    target_link_libraries(cami_cli_tests PRIVATE cami_compiler)
+    cami_enable_warnings(cami_cli_tests)
+
+    add_test(NAME cli.unit COMMAND cami_cli_tests)
+    add_test(NAME cli.version COMMAND cami version)
+    set_tests_properties(
+        cli.version
+        PROPERTIES
+            PASS_REGULAR_EXPRESSION
+                "cami compiler [0-9]+\\.[0-9]+\\.[0-9]+.*cami language 0\\.1.*package manifest 1.*LLVM [0-9]+"
     )
 endif()

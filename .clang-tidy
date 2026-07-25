@@ -1,8 +1,12 @@
 Checks: >
   -*,
   bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
   clang-analyzer-*,
   performance-*,
-  portability-*
+  -performance-enum-size,
+  portability-*,
+  -portability-avoid-pragma-once
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*/(compiler|runtime|tests)/'
