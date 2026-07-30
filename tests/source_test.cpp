@@ -75,6 +75,11 @@ void testLocationsAndNormalization() {
     require(source.path() == "src/main.cami", "path should be normalized and package-relative");
     require(source.bytes() == bytes, "source bytes should remain untouched");
     require(source.lineCount() == 3, "fixture should contain three lines");
+    require(source.lineStartOffset(2) == 7, "second line should begin after CRLF");
+    require(source.lineText(1) == "first", "line text should omit CRLF");
+    require(source.lineText(2) == "\tcaf\xc3\xa9 \xf0\x9f\x92\x9c",
+            "line text should preserve tabs and UTF-8");
+    require(!source.lineText(0), "line zero should not exist");
 
     requireLocation(source, 0, {0, 1, 1});
     requireLocation(source, 5, {5, 1, 6});

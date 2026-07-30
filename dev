@@ -19,6 +19,7 @@ configure() {
 prebuild() {
     printf 'prebuild\n'
     configure
+    format
 }
 
 build() {
@@ -45,12 +46,12 @@ fi
 case "$1" in
     build)
         # build means the whole gate. partial success does not need a friendlier spelling.
-        format
         prebuild
         build
         postbuild
         ;;
     format)
+        configure
         format
         ;;
     *)

@@ -99,6 +99,7 @@ configure_file(
 add_library(
     cami_compiler STATIC
     compiler/lib/cli.cpp
+    compiler/lib/diagnostic.cpp
     compiler/lib/source.cpp
 )
 target_include_directories(
@@ -145,8 +146,13 @@ if(BUILD_TESTING)
     target_link_libraries(cami_source_tests PRIVATE cami_compiler)
     cami_enable_warnings(cami_source_tests)
 
+    add_executable(cami_diagnostic_tests tests/diagnostic_test.cpp)
+    target_link_libraries(cami_diagnostic_tests PRIVATE cami_compiler)
+    cami_enable_warnings(cami_diagnostic_tests)
+
     add_test(NAME cli.unit COMMAND cami_cli_tests)
     add_test(NAME cli.version COMMAND cami version)
+    add_test(NAME diagnostic.unit COMMAND cami_diagnostic_tests)
     add_test(NAME source.unit COMMAND cami_source_tests)
     set_tests_properties(
         cli.version

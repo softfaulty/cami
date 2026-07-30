@@ -62,6 +62,8 @@ public:
     [[nodiscard]] std::string_view path() const noexcept;
     [[nodiscard]] std::string_view bytes() const noexcept;
     [[nodiscard]] std::size_t lineCount() const noexcept;
+    [[nodiscard]] std::optional<std::size_t> lineStartOffset(std::size_t line) const noexcept;
+    [[nodiscard]] std::optional<std::string_view> lineText(std::size_t line) const noexcept;
     [[nodiscard]] std::optional<SourceLocation> locationAt(std::size_t byteOffset) const;
     [[nodiscard]] std::optional<SourceSpan> span(std::size_t start, std::size_t end) const;
 

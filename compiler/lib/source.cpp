@@ -178,6 +178,34 @@ std::string_view SourceFile::bytes() const noexcept { return bytes_; }
 
 std::size_t SourceFile::lineCount() const noexcept { return lineStarts_.size(); }
 
+std::optional<std::size_t> SourceFile::lineStartOffset(std::size_t line) const noexcept {
+    if (line == 0 || line > lineStarts_.size()) {
+        return std::nullopt;
+    }
+
+    return lineStarts_[line - 1];
+}
+
+std::optional<std::string_view> SourceFile::lineText(std::size_t line) const noexcept {
+    const std::optional<std::size_t> start = lineStartOffset(line);
+
+    if (!start) {
+        return std::nullopt;
+    }
+
+    std::size_t end = line < lineStarts_.size() ? lineStarts_[line] : bytes_.size();
+
+    if (end > *start && bytes_[end - 1] == '\n') {
+        --end;
+    }
+
+    if (end > *start && bytes_[end - 1] == '\r') {
+        --end;
+    }
+
+    return std::string_view(bytes_).substr(*start, end - *start);
+}
+
 std::optional<SourceLocation> SourceFile::locationAt(std::size_t byteOffset) const {
     if (byteOffset > bytes_.size()) {
         return std::nullopt;
