@@ -16,12 +16,8 @@ it does not propose the answer.
 
 | id                 | status   | missing normative contract                                                                                                                                                | affected roadmap work                                   |
 | ------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `BLK-LEX-001`      | blocking | source identifier start/continue characters and normalization are not defined; the package-name regex is not a source identifier grammar                                  | `002`, `013`, `016`, `017–024`, `126`                   |
-| `BLK-LEX-002`      | blocking | the closed reserved-keyword set is not stated; a grammar literal does not by itself prove reservation                                                                     | `002`, `013`, `016`, `126`                              |
-| `BLK-LEX-003`      | blocking | accepted whitespace/line endings plus line, block and documentation comment delimiters, nesting and termination are not defined                                           | `002`, `013`, `016`, `023`, `126`, `128`                |
 | `BLK-LEX-004`      | blocking | integer/float base forms, separators, exponent forms and suffix grammar are not closed                                                                                    | `002`, `014`, `016`, `034–035`, `126`                   |
 | `BLK-LEX-005`      | blocking | string/character escape spellings and invalid escape handling are not defined                                                                                             | `002`, `015–016`, `126`                                 |
-| `BLK-LEX-006`      | blocking | the complete operator spellings and lexical longest-match rules are not defined                                                                                           | `002`, `013`, `016`, `019`, `126`                       |
 | `BLK-SYN-001`      | blocking | there is no complete declaration/expression grammar, normative modifier order or closed precedence/associativity table                                                    | `003`, `017`, `019–023`, `126`, `128`                   |
 | `BLK-SYN-002`      | blocking | examples establish the basic constructor-definition shape, but default construction, constructor modifiers, destructors and clone-constructor declarations are incomplete | `003`, `021`, `039`, `053–061`, `113–120`               |
 | `BLK-SYN-003`      | blocking | trait declaration bodies, required/default method syntax and full `impl` body grammar are not shown                                                                       | `003`, `022`, `031`, `040`, `065–069`, `106`, `112`     |
@@ -47,9 +43,8 @@ behavior already stated by the language rules. it may not fill the missing edge 
 undocumented default and call that compatibility.
 
 a `blocking` item must be resolved in a future normative revision before the
-affected behavior ships. changing this ledger to “resolved” without a matching
-a matching language-rule update is required. changing only the ledger is moving
-the problem into a table.
+affected behavior ships. removing a blocker requires a matching language-rule
+update. changing only the ledger is moving the problem into a table.
 
 the three `excluded` entries stay rejected or unrecognized in v0.1. they are
 not compiler extension points, hidden flags or syntax reserved for later.

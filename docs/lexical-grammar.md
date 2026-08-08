@@ -1,196 +1,126 @@
 # extracted lexical grammar
 
-this is the lexical surface the current language rules actually commit to. it
-is an extraction, not a creative writing exercise for tokens. anything not
-closed by the language contract is marked with a blocker from
-[`implementation-blockers.md`](implementation-blockers.md).
-
-## notation
-
-| label       | meaning                                                                                         |
-| ----------- | ----------------------------------------------------------------------------------------------- |
-| `specified` | the language rules state the spelling or character rule directly                                |
-| `observed`  | normative examples use the spelling, but the language rules do not close the whole token family |
-| `blocked`   | a conforming lexer cannot choose the missing rule                                               |
-
-an observed spelling may be tokenized for fixtures. it does not prove that the
-same word is reserved everywhere or that no other spelling exists.
+this is the lexical surface the current language rules commit to. it remains an
+extraction rather than a second specification with suspiciously independent
+opinions.
 
 ## source text
 
-| item                | status    | extracted rule                                            | audit                    |
-| ------------------- | --------- | --------------------------------------------------------- | ------------------------ |
-| encoding            | specified | source files are UTF-8; invalid UTF-8 is a source error   | `S09-LEXER`              |
-| source locations    | specified | tokens retain byte range, line and Unicode-scalar column  | `S09-LEXER`, `S13-TOOLS` |
-| line endings        | blocked   | normalization and accepted line-ending set are not stated | `BLK-LEX-003`            |
-| Unicode identifiers | blocked   | allowed code points and normalization are not stated      | `BLK-LEX-001`            |
-
-## identifiers and names
-
-the only closed identifier-like production is the manifest package/feature
-name:
+source files are UTF-8. outside quoted literals, whitespace is exactly:
 
 ```ebnf
-lower = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j"
-      | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t"
-      | "u" | "v" | "w" | "x" | "y" | "z" ;
-
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
-
-package-name = lower, { lower | digit | "_" } ;
+whitespace = " " | "\t" | "\n" | "\r\n" ;
 ```
 
-that grammar belongs to `package.toml`. source identifiers are only described
-as “valid identifiers,” so they remain blocked by `BLK-LEX-001`. importing the
-manifest regex into source code would be a language decision wearing a fake
-moustache.
+LF and CRLF each end one line. a lone CR is invalid. tokens and trivia retain
+their byte range plus one-based line and Unicode-scalar column. tabs are one
+source scalar and render at four-column stops.
 
-case is semantically significant in every shown identifier. the language rules do not
-state case folding or normalization, so the lexer may not invent either.
+audit: `S09-LEXER`, `S13-TOOLS`.
 
-## grammar literals
+## identifiers
 
-the following words have a grammatical role in normative prose or examples:
+v0.1 identifiers are ASCII and case-sensitive:
+
+```ebnf
+identifier-start = "A"…"Z" | "a"…"z" | "_" ;
+identifier-continue = identifier-start | "0"…"9" ;
+identifier = identifier-start, { identifier-continue } ;
+```
+
+non-ASCII text remains valid in literals and comments. identifiers perform no
+Unicode normalization or case folding because they contain no non-ASCII code
+points. simple, stable, considerably less haunted.
+
+audit: `S09-LEXER`.
+
+## reserved keywords
+
+the closed v0.1 keyword set is:
 
 ```text
 as          bool        break       byte        char        class
-const       continue    defer       do          else        enum
-extern      f32         f64         false       fn          for
-i8          i16         i32         i64         i128        if
-in
-impl        import      int         isize       let         match
-module      none        override    package     private     protected
-public      return      step        struct      switch      true        u8
-u16         u32         u64         u128        uint        union
-unsafe      usize       virtual     void        where       while
-with
+comptime    const       continue    defer       do          else
+enum        extern      f32         f64         false       fn
+for         i8          i16         i32         i64         i128
+if          impl        import      in          int         isize
+let         match       module      none        null        override
+package     private     protected   public      return      step
+struct      switch      trait       true        u8          u16
+u32         u64         u128        uint        union       unsafe
+usize       virtual     void        where       while       with
 ```
 
-this is not a closed reserved-keyword list. `core`, `std`, `context`, `some`,
-`ok` and `err` are used as names or constructors and are not declared
-keywords. `BLK-LEX-002` blocks keyword reservation.
+`core`, `std`, `context`, `some`, `ok` and `err` are ordinary identifiers.
+reserving `comptime` and `trait` does not resolve their remaining syntactic
+blockers; it only means they cannot cosplay as variable names.
 
-properties, a GC wrapper and async/await are not part of the extracted v0.1
-grammar. prose references do not manufacture tokens.
+audit: `S01-PRIMITIVES`, `S02-OWNERSHIP`, `S03-DISPATCH`, `S04-POINTERS`,
+`S05-GENERICS`, `S06-ERRORS`, `S07`, `S08`, `S09-LEXER`, `S12-ABI`.
 
-## literals
-
-### booleans and null
+## comments and retained trivia
 
 ```ebnf
-boolean-literal = "true" | "false" ;
-null-literal = "null" ;
+line-comment = "//", { any UTF-8 scalar except CR or LF } ;
+doc-line-comment = "///", { any UTF-8 scalar except CR or LF } ;
+block-comment = "/*", { any UTF-8 scalar sequence not containing "*/" }, "*/" ;
+doc-block-comment = "/**", { any UTF-8 scalar sequence not containing "*/" }, "*/" ;
 ```
 
-`null` is valid only for raw pointers after type checking. it is still one
-lexical token here; the lexer is not promoted to null-safety management.
+`///` wins over `//`, and `/**` wins over `/*`. `////` is a documentation line
+comment whose body begins with `/`; `/**/` is an empty documentation block
+comment. block comments do not nest. an unterminated block comment is a lexical
+error through end of file. block-comment line endings still use LF or CRLF; a
+lone CR does not become valid merely because a comment tried to hide it.
 
-### integers
+the lexer retains whitespace and all four comment forms in source order.
+ordinary comments belong to formatting; documentation comments are additionally
+available to documentation generation.
 
-normative examples demonstrate decimal and `0x`-prefixed hexadecimal integers,
-including underscore separators:
-
-```text
-0
-1
-255
-4096
-0xFF
-0x1_0000_0001
-```
-
-the examples establish those spellings, not a complete integer grammar.
-binary/octal prefixes, separator placement, suffixes and digit diagnostics are
-blocked by `BLK-LEX-004`.
-
-the leading `-` in a negative integer is a unary operator, not proven to be
-part of the literal token. that keeps overflow checking where the language places
-it: typing and constant evaluation.
-
-### floating point
-
-normative examples demonstrate decimal floating literals such as `2.5`.
-fraction requirements, exponent forms, hexadecimal floats and suffixes are not
-closed. `BLK-LEX-004` applies.
-
-### characters
-
-normative examples use single quotes:
-
-```text
-'C'
-'💜'
-```
-
-after decoding, a character literal contains exactly one Unicode scalar and
-may not contain a surrogate. the escape syntax needed to produce characters
-that cannot be written directly is blocked by `BLK-LEX-005`.
-
-### strings
-
-normative examples use double quotes and source strings represent UTF-8 text.
-string values may contain NUL and are not implicitly terminated. the following
-remain blocked by `BLK-LEX-005`:
-
-- escape spellings
-- escaped newline behavior
-- raw or multiline forms
-- how a source NUL is represented
-- the exact diagnostic boundary for a malformed escape
-
-the ABI string `"C"` and attribute strings use the same observed string token.
-the language does not define a second string-literal lexer for them, which is nice.
-one is enough.
-
-## comments and trivia
-
-normative examples demonstrate `//` line comments. section 9 also requires:
-
-- documentation comments retained for documentation generation
-- ordinary comments retained for formatting
-
-the delimiter for documentation comments, the existence and nesting of block
-comments, newline consumption and unterminated-comment behavior are not
-defined. `BLK-LEX-003` blocks the complete comment grammar.
-
-whitespace separates tokens where concatenation would change tokenization.
-the accepted whitespace code points are not closed by the language rules.
+audit: `S09-LEXER`, `S13-TOOLS`.
 
 ## punctuation and operators
 
-the following spellings occur in normative syntax or are named directly:
+the closed spelling set is:
 
 ```text
-( )  { }  [ ]  ,  ;  :  .  ...
-@    ->   ::    ?
-=    +=   +     -     *  /  %
-==   !=   <     >     <= >=
-&
-..   ..=
+( ) { } [ ] , ; : .
+... ..= .. -> :: => ? @
++ - * / % ++ --
+& | ^ ~ ! && ||
+= += -= *= /= %= &= |= ^= <<= >>=
+== != < > <= >= << >>
 ```
 
-important context:
+the lexer consumes the longest valid spelling at each byte. comment openers are
+recognized before `/`. quoted-literal delimiters belong to their literal tokens
+and are not punctuation.
 
-- `*` is multiplication, pointer declarator or dereference depending on parse
-  context.
-- `&` is bitwise-and or reference formation/declarator depending on context.
-- `->` is raw-pointer member access.
-- `.` is module/member access and tuple-field access.
-- `::` appears in associated names such as `i32::MAX`.
-- `?` is postfix propagation.
-- `..` and `..=` are range operators.
-- `...` is valid only in a C variadic declaration.
-- `@` begins an attribute or builtin spelling such as `@sizeOf`.
+this table closes token boundaries, not precedence or semantics. the parser and
+type checker still decide what a spelling means in context.
 
-the language rules name bitwise and shift behavior but do not provide their complete
-spellings, a closed operator table or lexical longest-match rules. parser
-precedence is likewise not fully stated. those facts belong to `BLK-LEX-006`
-and `BLK-SYN-001`; guessing longest-match from vibes would probably work until
-it very much did not.
+audit: `S01-OVERFLOW`, `S04-POINTERS`, `S05-GENERICS`, `S06-ERRORS`, `S08`,
+`S09-LEXER`, `S12-ABI`.
+
+## literals
+
+`true`, `false`, `none` and `null` are keyword-shaped literal spellings.
+numeric and quoted literals remain separate token families.
+
+normative examples establish decimal and `0x` integers with separators plus
+decimal floating literals, but the complete number grammar remains blocked by
+`BLK-LEX-004`.
+
+character literals use single quotes and produce one Unicode scalar. strings use
+double quotes and produce UTF-8 text. their escape, raw/multiline and malformed
+forms remain blocked by `BLK-LEX-005`.
+
+the leading `-` is always punctuation rather than part of a numeric literal.
+overflow and literal typing remain later-stage work.
 
 ## lexer acceptance gate
 
-a complete lexer release remains blocked until `BLK-LEX-001` through
-`BLK-LEX-006` are normatively resolved. before then, implementation may support
-the observed corpus for prototyping, but must not label that corpus the complete
-Cami lexical grammar.
+identifiers, keywords, whitespace, comments and punctuation are closed and may
+ship in commit `013`. `BLK-LEX-004` and `BLK-LEX-005` continue to block the
+complete literal lexer in commits `014` and `015`; this commit does not solve
+numbers or escapes through optimism.

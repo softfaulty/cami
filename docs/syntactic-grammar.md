@@ -433,7 +433,7 @@ language rules say so. currently they do not.
 
 ## parser acceptance gate
 
-`BLK-SYN-001` through `BLK-SYN-006`, plus the lexical blockers, prevent a claim
-of complete grammar support. the fragments above are still useful: they define
+`BLK-SYN-001` through `BLK-SYN-006`, plus the unresolved literal blockers,
+prevent a claim of complete grammar support. the fragments above are still useful: they define
 the parse corpus that is already supported by normative text and identify the
 precise places where implementation must stop instead of improvising.

@@ -46,9 +46,9 @@ retained formatter/documentation trivia.
 the lexer validates token text and source encoding. it does not resolve names,
 infer literal types, check overflow or parse declarations.
 
-the complete lexer is blocked by `BLK-LEX-001` through `BLK-LEX-006`. observed
-fixtures may exist before those blockers clear; they are not a complete
-language claim.
+identifiers, keywords, trivia and punctuation are closed by section 9.
+`BLK-LEX-004` and `BLK-LEX-005` still block the complete numeric and quoted
+literal grammar.
 
 audit: `S09-LEXER`, `S13-TOOLS`.
 

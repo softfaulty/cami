@@ -92,7 +92,8 @@ tokens carry:
 - source spelling or an interned reference to it
 - retained trivia needed by formatter/docs
 
-the token kind set remains incomplete until the lexical blockers clear.
+the token kind set remains incomplete until the numeric and quoted-literal
+blockers clear.
 
 ### AST
 
